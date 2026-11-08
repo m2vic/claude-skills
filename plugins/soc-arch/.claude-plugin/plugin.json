@@ -1,0 +1,8 @@
+{
+  "name": "soc-arch",
+  "version": "0.1.0",
+  "description": "Separation of concerns for backends: business rules in the middle, ports and adapters for databases, APIs, webhooks and queues",
+  "author": { "name": "m2vic" },
+  "license": "MIT",
+  "keywords": ["architecture", "hexagonal", "ports-and-adapters", "backend"]
+}

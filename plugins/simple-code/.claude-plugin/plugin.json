@@ -1,0 +1,8 @@
+{
+  "name": "simple-code",
+  "version": "0.1.0",
+  "description": "Write the simplest, most readable code that does the job, without extra layers or abstractions",
+  "author": { "name": "m2vic" },
+  "license": "MIT",
+  "keywords": ["simplicity", "readability", "code-quality"]
+}

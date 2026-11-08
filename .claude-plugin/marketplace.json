@@ -1,0 +1,21 @@
+{
+  "name": "m2vic-skills",
+  "owner": { "name": "m2vic" },
+  "metadata": {
+    "description": "Claude Code skills for simple, readable code and clean backend architecture"
+  },
+  "plugins": [
+    {
+      "name": "simple-code",
+      "source": "./plugins/simple-code",
+      "description": "Write the simplest, most readable code that does the job, without extra layers or abstractions",
+      "version": "0.1.0"
+    },
+    {
+      "name": "soc-arch",
+      "source": "./plugins/soc-arch",
+      "description": "Separation of concerns for backends: business rules in the middle, ports and adapters for databases, APIs, webhooks and queues",
+      "version": "0.1.0"
+    }
+  ]
+}
