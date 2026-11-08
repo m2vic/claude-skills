@@ -148,12 +148,26 @@ What this shows:
 - **Neither skill fixes the crash-during-payment problem.** Each setup fails in a different way.
 - **The `simple-code` runs dropped an input-limit check.** 3 of the 4 shop runs that used `simple-code` accepted a quantity so large that the cart total wrapped around. Both superpowers-only runs caught it during their own review.
 
+**After fixing those two gaps.** `simple-code` now has two more rules: check numbers from a request against their limit before doing arithmetic with them, and decide what a restart does in the middle of a change that calls something external. The second rule says to keep a half-finished order blocked and visible, not to undo it or reopen it. Then I reran the shop 2 more times with each setup that uses `simple-code`. superpowers only was not rerun, because the fix does not touch it.
+
+| Shop, after the fix | superpowers only (unchanged) | + `simple-code` | + `simple-code` + `soc-arch` |
+|---|---|---|---|
+| Hidden tests passed | 17/17 each | 17/17 each | 17/17 each |
+| Production code lines (average) | 559.5 | **394** (was 383.5) | 825 (was 769) |
+| Go files (average) | 7 | **3.5** | 21 |
+| Boundary check | Not applicable | Not applicable | Pass, both runs |
+| Time per run (average) | **5.7 min** | 8.4 min (was 7.1) | 9.7 min (was 9.8) |
+| Huge quantity (2^63 - 1) added to a cart | Rejected, both runs | **Rejected, both runs** | **Rejected, both runs** |
+| Server crashes during payment | Stock returned, though the charge may have gone through | **Order stays pending and the cart stays locked, both runs. Startup logs how many are pending** | **Same, both runs** |
+| Same cart checked out twice / item added during payment | Charged once / rejected | Charged once / rejected | Charged once / rejected |
+
+Both gaps are closed in all 4 new runs, and each run wrote its own test for both of them. It cost about 10 extra lines with `simple-code` alone. One run with both skills added its own error code, `checkout_in_progress`, for a cart whose payment is still in progress; the task did not define one. The blind review was not rerun for these runs.
+
 ## Known gaps
 
 - Neither skill says how it relates to the other. When both are on, agents have so far treated `soc-arch` as the chosen design and applied `simple-code` inside it.
 - `simple-code` sometimes trims `soc-arch` steps, such as a clock port and its adapter test.
-- `simple-code` can leave out crash recovery nobody asked for. All 4 shop runs inside superpowers that used it left stock stuck after a crash during payment.
-- `simple-code` can drop input checks nobody asked for, such as a cap on huge quantities. Inside superpowers, 3 of 4 shop runs that used it let a cart total wrap around.
+- Crash recovery and limits on huge numbers were missing before the rules above were added; with the fix they held in 4 of 4 runs. Other safety checks nobody asked for may still be trimmed.
 - Results come from a small number of runs in Go only.
 
 ## License

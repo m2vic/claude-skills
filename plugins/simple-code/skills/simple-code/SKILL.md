@@ -44,6 +44,10 @@ The goal is code a new teammate can read top to bottom once, explain, and safely
 
 **Handle the failures that can happen, and fail loudly.** Validate what the requirements or a real boundary (user input, network, files) demand, and return a clear error for bad input instead of producing a plausible wrong answer. If code skips or drops data, make that visible to whoever runs it, for example with a count in a log line. Do not catch an exception just to re-raise it, and do not guard against states the code cannot reach.
 
+**Check numbers from outside before doing arithmetic with them.** A quantity, amount or count from a request can be huge, and adding or multiplying it can overflow into a small or negative value that passes every later check. Compare the incoming value with its limit (stock, a maximum) before you add it to anything, and add a test that sends the largest value the type can hold. This is one `if`, not extra code.
+
+**Decide what a restart does in the middle of a multi-step change.** When code changes saved state, calls something slow or external such as a payment provider, and then changes state again, ask what happens if the process stops between those steps. Save a clear in-between state (such as `pending`) before the call. On restart, do not guess: do not undo a step that may have succeeded, such as returning stock for a charge that may have gone through, and do not reopen the work so that a retry could charge twice. Leave the record in its in-between state, keep it blocked, and make it visible, for example by logging how many are pending at startup, so a person can resolve it. Write this rule in one or two lines of the design and test it by restarting with a pending record.
+
 **Add no extras.** No CLI, logging, config, retries, caching, metrics, or type hierarchies unless they were asked for, or the job or a stated goal cannot be met without them. Code that runs unattended, for example, needs some way to report problems.
 
 ## When changing existing code
