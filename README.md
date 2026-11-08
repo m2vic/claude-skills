@@ -27,20 +27,77 @@ cp -r claude-skills/plugins/simple-code/skills/simple-code ~/.claude/skills/
 cp -r claude-skills/plugins/soc-arch/skills/soc-arch ~/.claude/skills/
 ```
 
-## What testing showed so far
+## Test results
 
-These are small tests on Go tasks, with hidden behaviour tests and one blind AI reviewer, so treat the numbers as a first signal rather than proof.
+All tests used Go. Each setup was run more than once on the same task. Hidden tests checked behaviour over the code's real interface. One AI reviewer then scored the code without being told which setup wrote it. **Treat these numbers as a first signal, not proof:** the samples are small, there was one reviewer, and only one language.
 
-**simple-code, compared with no skill**
-- On 4 everyday Go tasks, the code was about 25% shorter (254.5 against 338 lines in total), and every hidden test passed on both sides.
-- A blind reviewer preferred the code with the skill in 6 of 8 pairs, called 2 a tie, and preferred the code without it in none.
-- On messy CSV input, the code with the skill was sometimes stricter, for example rejecting a file that starts with a byte order mark.
+### 1. `simple-code` compared with no skill
 
-**Both skills together, on backend services**
-- Every hidden test passed (60 of 60), with about 25% less production code than `soc-arch` alone.
-- It was still about twice the size of `simple-code` alone.
-- On a small shop backend, the reviewer preferred no skills if the shop stays small, and both skills if it grows a lot, in both runs. The code was 26% bigger with both skills.
-- One both-skills run could charge the same cart twice when two checkouts arrived at the same moment. Whatever you use, test concurrency and crash recovery yourself.
+4 everyday tasks (pricing rules, a sales CSV summary, a retry helper, signup validation), 2 runs per side.
+
+| Measure | With `simple-code` | No skill |
+|---|---|---|
+| Hidden tests passed | 122/122 | 122/122 |
+| Code lines (sum of the 4 task averages) | **254.5** | 338 |
+| Functions | **12.5** | 20 |
+| Added types | **0** | 1.5 |
+| Readability (1-5) | **4.50** | 3.88 |
+| Ease of the next change (1-5) | **4.75** | 4.62 |
+| Extra code is justified (1-5) | **4.62** | 3.38 |
+| Reviewer preferred | **6 of 8** | 0 of 8 (2 ties) |
+
+| Task | Code lines with `simple-code` | Code lines with no skill | Shorter by |
+|---|---|---|---|
+| Pricing | 34.5 | 42.5 | 19% |
+| Sales CSV | 111.5 | 165 | 32% |
+| Retry | 24.5 | 27.5 | 11% |
+| Signup | 84 | 103 | 18% |
+| **Total** | **254.5** | **338** | **25%** |
+
+On prompts that invited extra features, the code was 33% shorter (316 lines against 471). On messy CSV files, for example one with a byte order mark or a capitalised header, the `simple-code` version returned an error where the no-skill version still worked.
+
+### 2. Using the skills alone and together
+
+2 backend tasks (refunds with a payment provider, and subscriptions with webhooks and email), 2 runs per setup.
+
+| Measure | `simple-code` only | Both | `soc-arch` only |
+|---|---|---|---|
+| Hidden tests passed | 60/60 | 60/60 | 60/60 |
+| Boundary check | Not applicable | 4/4 pass | 4/4 pass |
+| Production code lines | **532.5** | 1,055.5 | 1,402 |
+| Production Go files per task | **1.5** | 9.75 | 12.75 |
+| Interfaces per task | **0** | 2.75 | 5.5 |
+| Readability (1-5) | **5.00** | 4.25 | 3.00 |
+| Rules kept apart from outside systems (1-5) | 2.00 | 4.75 | **5.00** |
+| Big change, such as moving to Postgres (1-5) | 2.25 | 4.00 | **4.75** |
+| Structure is needed (1-5) | **5.00** | 4.25 | 2.50 |
+| Reviewer's first choice | 0 of 4 | 2 of 4 | 2 of 4 |
+
+Using both kept the `soc-arch` structure with about 25% less code than `soc-arch` alone. The reviewer was asked which code they'd rather own as it grows, which favours more structure, so `simple-code` alone came last every time.
+
+### 3. Small shop backend: both skills compared with no skills
+
+One task: products, carts, coupons, shipping, stock, checkout through a payment provider, and data saved to a file. 2 runs per side.
+
+| Measure | Both skills | No skills |
+|---|---|---|
+| Hidden tests passed | 17/17 | 17/17 |
+| Production code lines | 740 | **589** |
+| Production Go files | 16.5 | **6.5** |
+| Test lines | **566** | 172 |
+| Readability (1-5) | 4.0 | 4.0 |
+| Rules kept apart from outside systems (1-5) | **5.0** | 3.5 |
+| Big change, such as moving to Postgres (1-5) | **4.0** | 2.5 |
+| Preferred if the shop stays this size | 0 of 2 | **2 of 2** |
+| Preferred if the shop grows a lot | **2 of 2** | 0 of 2 |
+
+| Check | Both, run 1 | Both, run 2 | None, run 1 | None, run 2 |
+|---|---|---|---|---|
+| Same cart checked out twice at once | Charged once | **Charged twice** | Charged once | Charged once |
+| Item added while payment is running | Rejected | **Accepted** | Rejected | Rejected |
+| Server crashes during payment | **Cart stuck, stock lost** | **Stock lost** | Order failed, stock returned | Order failed, stock returned |
+
+Neither skill makes code safe under concurrency or crashes. Whatever you use, test those yourself.
 
 ## Known gaps
 
