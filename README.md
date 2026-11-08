@@ -175,6 +175,30 @@ Both gaps are closed in all 4 new runs, and each run wrote its own test for both
 
 Treat the "stays this size" result for both skills with care. My first attempt at this review gave the reviewer copies with the `cmd/server` folder missing on both sides, which was my mistake. On those copies, a different reviewer preferred superpowers alone for a small shop in both pairs. The "if it grows" answer was the same both times. One reviewer per comparison is noisy.
 
+**Larger rerun: 5 shops per setup, 3 reviewers per comparison.** Because two pairs and one reviewer gave unstable answers, I built 3 more shops with each setup, so each setup has 5. Then 3 separate blind reviewers judged all 5 pairs for each comparison, with A and B shuffled separately for each reviewer. That gives 15 verdicts per question. This supersedes the two smaller review tables above.
+
+| Shop, 5 runs per setup | superpowers only | + `simple-code` | + `simple-code` + `soc-arch` |
+|---|---|---|---|
+| Hidden tests passed | 17/17 each | 17/17 each | 17/17 each |
+| Production code lines (average) | 550 | **396** | 848 |
+| Go files (average) | 6.4 | **3.4** | 20.6 |
+| Time per run (average) | **5.8 min** | 7.5 min | 10.2 min |
+| Huge quantity accepted (total wraps around) | 1 of 5 runs | **0 of 5** | **0 of 5** |
+| Server crashes during payment | 5 of 5 return the stock and reopen the cart, so a retry can charge twice | **5 of 5 keep the order pending and the cart locked** | **5 of 5 keep the order pending and the cart locked** |
+
+| Compared with superpowers only (15 verdicts each) | Preferred if it stays this size | Preferred if it grows | Readability (1-5) | Big change (1-5) |
+|---|---|---|---|---|
+| + `simple-code` | **9 of 15** | 0 of 15 | **4.1** against 3.8 | 2.0 against 3.7 |
+| + `simple-code` + `soc-arch` | 6 of 15 | **15 of 15** | 3.5 against 3.9 | **3.7** against 2.0 |
+
+What this shows:
+
+- **If the shop will grow, use both skills.** All 15 verdicts preferred it, and all 3 reviewers agreed on every pair.
+- **For a shop that stays small, `simple-code` alone has a modest edge.** It won 9 of 15, with the best readability and the least code. Reviewers often disagreed on the same pair, so this lead is smaller than it looks.
+- **For a small shop, both skills is not the better pick.** It won 6 of 15, and only in the 2 pairs where the superpowers-only shop had a serious bug (a quantity overflow in one, a global lock held while reading request bodies in the other). In the other 3 pairs, all 3 reviewers preferred superpowers alone.
+- **`simple-code` alone is the hardest to grow.** It never won "if it grows", because its single package lets HTTP handlers change the data directly.
+- **Bugs that remain in some runs of every setup:** reading a request body while holding the global lock, keeping a change in memory after the save to disk failed, and crashing when a product is missing from the data file.
+
 ## Known gaps
 
 - Neither skill says how it relates to the other. When both are on, agents have so far treated `soc-arch` as the chosen design and applied `simple-code` inside it.
