@@ -161,7 +161,19 @@ What this shows:
 | Server crashes during payment | Stock returned, though the charge may have gone through | **Order stays pending and the cart stays locked, both runs. Startup logs how many are pending** | **Same, both runs** |
 | Same cart checked out twice / item added during payment | Charged once / rejected | Charged once / rejected | Charged once / rejected |
 
-Both gaps are closed in all 4 new runs, and each run wrote its own test for both of them. It cost about 10 extra lines with `simple-code` alone. One run with both skills added its own error code, `checkout_in_progress`, for a cart whose payment is still in progress; the task did not define one. The blind review was not rerun for these runs.
+Both gaps are closed in all 4 new runs, and each run wrote its own test for both of them. It cost about 10 extra lines with `simple-code` alone. One run with both skills added its own error code, `checkout_in_progress`, for a cart whose payment is still in progress; the task did not define one. 
+
+**Blind review after the fix.** The new shop runs were compared with the same superpowers-only runs, again by two separate reviewers who did not know which version was which:
+
+| Compared with superpowers only | Shop: preferred if it stays this size | Shop: preferred if it grows | Shop: big change (1-5) |
+|---|---|---|---|
+| + `simple-code` | **2 of 2** (was 1 of 2) | 1 of 2 (was 0 of 2) | 2.5 against 3.5 |
+| + `simple-code` + `soc-arch` | **2 of 2** (was 0 of 2) | **2 of 2** (was 2 of 2) | **4.0** against 2.0 |
+
+- **Small shop:** with `simple-code` alone, the reviewer called it the quickest to read in both pairs (readability 5 against 4 in each).
+- **Both skills:** the reviewer found a confirmed bug in each superpowers-only shop and none of the same weight in the both-skills shops.
+
+Treat the "stays this size" result for both skills with care. My first attempt at this review gave the reviewer copies with the `cmd/server` folder missing on both sides, which was my mistake. On those copies, a different reviewer preferred superpowers alone for a small shop in both pairs. The "if it grows" answer was the same both times. One reviewer per comparison is noisy.
 
 ## Known gaps
 
