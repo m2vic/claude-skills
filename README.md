@@ -41,12 +41,12 @@ cp -r claude-skills/plugins/soc-arch/skills/soc-arch ~/.claude/skills/
 
 The last two rows come from extra tests run on every shop, outside the hidden tests.
 
-**Blind review against superpowers only (15 verdicts each).** The first two columns show how often each setup was preferred.
+**Blind review against superpowers only (15 verdicts each).** Each row is a separate comparison with its own 3 reviewers. "Preferred" counts how often the skill setup won. Scores are 1-5 and only mean something within a row: reviewers rate each version against the one beside it, so the same superpowers-only code got different scores in the two rows.
 
-| | If the shop stays this size | If the shop grows | Readability (1-5) | Moving to Postgres (1-5) |
+| | Preferred if the shop stays this size | Preferred if the shop grows | Readability: skills / superpowers only | Ease of moving to Postgres: skills / superpowers only |
 |---|---|---|---|---|
-| + `simple-code` | **9 of 15** | 0 of 15 | **4.1** vs 3.8 | 2.0 vs 3.7 |
-| + `simple-code` + `soc-arch` | 6 of 15 | **15 of 15** | 3.5 vs 3.9 | **3.7** vs 2.0 |
+| + `simple-code` | **9 of 15** | 0 of 15 | **4.1** / 3.8 | 2.0 / **3.7** |
+| + `simple-code` + `soc-arch` | 6 of 15 | **15 of 15** | 3.5 / **3.9** | **3.7** / 2.0 |
 
 - **Both skills is the clear choice for a backend that will grow.** All 15 verdicts preferred it.
 - **For a small shop, `simple-code` alone has a modest edge.** It had the least code and the best readability, but reviewers often disagreed on the same pair.
